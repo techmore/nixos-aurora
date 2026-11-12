@@ -18,7 +18,6 @@ buildPkgs.stdenvNoCC.mkDerivation {
   installPhase = ''
     runHook preInstall
 
-    mkdir restored
     nix-store --restore restored < ${sourceNar}
 
     install -Dm0444 \
