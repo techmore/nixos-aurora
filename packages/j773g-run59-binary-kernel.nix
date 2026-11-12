@@ -56,7 +56,10 @@ buildPkgs.stdenvNoCC.mkDerivation {
 
   meta = {
     description = "Exact J773g run-59 kernel and live DTB, copied without recompilation";
-    platforms = [ "aarch64-linux" ];
+    # This derivation only copies a prebuilt aarch64 Image and DTB.  It must
+    # evaluate and run on SER8's x86_64 build platform as well as in the
+    # aarch64 target package set.
+    platforms = [ "x86_64-linux" "aarch64-linux" ];
     license = buildPkgs.lib.licenses.gpl2Only;
   };
 }
