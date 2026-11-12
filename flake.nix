@@ -52,6 +52,9 @@
             # Its deliberately empty modules output must not make the initrd
             # closure fail while resolving the profile's module hints.
             boot.initrd.allowMissingModules = true;
+            # This image intentionally carries only the exact known-good
+            # J773g DTB copied with run 59, not Aurora's multi-board set.
+            aurora.stage2.requiredBoards = [ "j773g" ];
             # The proven kernel already carries the Apple cpufreq support.
             # Avoid evaluating the kernel-source-bound cpupower package: this
             # binary package intentionally has no source tree to compile.
