@@ -1,0 +1,37 @@
+From 8a1b2081f81834b2d60d257e2560bffe373107af Mon Sep 17 00:00:00 2001
+From: Sean Dolbec <sdolbec1@gmail.com>
+Date: Wed, 11 Nov 2026 20:59:29 -0500
+Subject: [PATCH] TEST ONLY: arm: apple: keep usb start at boot on the J773g
+
+The Mac mini M4 has no built-in keyboard. Keep the default preboot
+"usb start" there so a front-port USB keyboard works at the U-Boot
+and GRUB prompts. Recreates the local J773g commit our native boots
+with #38 and #40 carried (2026-11-11); not for upstream as is.
+
+Assisted-by: LLM
+---
+ arch/arm/mach-apple/board.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-apple/board.c b/arch/arm/mach-apple/board.c
+index 716a9301..763787ad 100644
+--- a/arch/arm/mach-apple/board.c
++++ b/arch/arm/mach-apple/board.c
+@@ -1500,7 +1500,13 @@ static void apple_efi_late_init(bool start_keyboard)
+ 		env_set("bootcmd", "run aurora_boot");
+ 	if (!strcmp(env_get("boot_targets") ?: "", "nvme usb"))
+ 		env_set("boot_targets", "nvme");
+-	if (!strcmp(env_get("preboot") ?: "", "usb start"))
++	/*
++	 * TEST ONLY: the Mac mini M4 has no built-in keyboard; keep the
++	 * front-port keyboard working at the boot prompt (booted on J773g
++	 * with #38 and #40, 2026-11-11).
++	 */
++	if (!of_machine_is_compatible("apple,j773g") &&
++	    !strcmp(env_get("preboot") ?: "", "usb start"))
+ 		env_set("preboot", "");
+ 	/* EFI ConIn uses the active stdin; keep serial input available. */
+ 	if (start_keyboard && IS_ENABLED(CONFIG_APPLE_MTP_KEYB) &&
+-- 
+2.53.0
+

@@ -407,7 +407,8 @@ in {
   uboot-asahi = prev.uboot-asahi.overrideAttrs (_old: {
     src = source "uboot-aurora";
     version = pins.uboot-aurora.version;
-    patches = [ ];
+    # TEST ONLY (J773g test image): keep "usb start" at boot on the Mac mini M4.
+    patches = [ (stableFile ./patches/uboot/0001-j773g-keep-usb-start.patch) ];
   });
   mesa = (final.callPackage ./mesa.nix {
     inherit (prev) mesa;
