@@ -60,13 +60,13 @@ jobs:
         run: python3 scripts/prefetch-sources.py
       - name: Build the pinned system closure serially and bounded
         run: |
-          timeout 100m nix build --cores 3 --max-jobs 1 --print-build-logs --out-link system .#nixosConfigurations.aurora-kde.config.system.build.toplevel
+          timeout 100m nix build --option substituters https://cache.nixos.org/ --cores 3 --max-jobs 1 --print-build-logs --out-link system .#nixosConfigurations.aurora-kde.config.system.build.toplevel
       - name: Build and verify the pinned installer closures bounded
         run: |
-          timeout 20m nix build --cores 3 --max-jobs 1 --print-build-logs --out-link installer .#nixosConfigurations.aurora-kde.config.system.build.nixos-install
-          timeout 20m nix build --cores 3 --max-jobs 1 --print-build-logs --out-link aura .#aura
-          timeout 20m nix build --cores 3 --max-jobs 1 --print-build-logs --out-link grub .#nixosConfigurations.aurora-kde.pkgs.grub2_efi
-          timeout 30m nix build --cores 3 --max-jobs 1 --print-build-logs --out-link result-stage2 .#checks.aarch64-linux.stage2
+          timeout 20m nix build --option substituters https://cache.nixos.org/ --cores 3 --max-jobs 1 --print-build-logs --out-link installer .#nixosConfigurations.aurora-kde.config.system.build.nixos-install
+          timeout 20m nix build --option substituters https://cache.nixos.org/ --cores 3 --max-jobs 1 --print-build-logs --out-link aura .#aura
+          timeout 20m nix build --option substituters https://cache.nixos.org/ --cores 3 --max-jobs 1 --print-build-logs --out-link grub .#nixosConfigurations.aurora-kde.pkgs.grub2_efi
+          timeout 30m nix build --option substituters https://cache.nixos.org/ --cores 3 --max-jobs 1 --print-build-logs --out-link result-stage2 .#checks.aarch64-linux.stage2
           python3 scripts/verify-image-closure.py --proof build-import.json ./system ./installer ./aura ./grub ./result-stage2
           python3 scripts/dbus-service-names.py ./system
       - name: Assemble the installer filesystem bundle
