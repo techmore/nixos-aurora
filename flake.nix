@@ -39,6 +39,10 @@
             nixpkgs.overlays = overlays;
             aurora.desktop = desktop;
             boot.kernelPackages = nixpkgs.lib.mkForce binaryKernelPackages;
+            # The proven kernel already carries the Apple cpufreq support.
+            # Avoid evaluating the kernel-source-bound cpupower package: this
+            # binary package intentionally has no source tree to compile.
+            powerManagement.cpuFreqGovernor = nixpkgs.lib.mkForce null;
           }
           ./modules/image.nix ];
       };
