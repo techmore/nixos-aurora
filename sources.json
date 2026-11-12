@@ -1,12 +1,12 @@
 {
   "kernel-aurora": {
     "repository": "https://github.com/techmore/linux",
-    "commit": "51047d7519b6e5d01247c591458f4f37b11665b9",
+    "commit": "b3218010d34be05fa0d6ebfb6fd08638ecdb7451",
     "version": "7.3.0",
-    "source_url": "https://codeload.github.com/techmore/linux/tar.gz/51047d7519b6e5d01247c591458f4f37b11665b9",
-    "archive_root": "linux-51047d7519b6e5d01247c591458f4f37b11665b9",
-    "sha256": "6e4e63acddb400b89d224cfc9afd545e082b4f8703e2e784d4aa814355e1eaa3",
-    "nix_hash": "sha256-bk5jrN20ALidIkz8mv1UXggrT4cD4ueE1KqBQ1Xh6qM="
+    "source_url": "https://codeload.github.com/techmore/linux/tar.gz/b3218010d34be05fa0d6ebfb6fd08638ecdb7451",
+    "archive_root": "linux-b3218010d34be05fa0d6ebfb6fd08638ecdb7451",
+    "sha256": "38146b41344c1d82c3ce17a92ab917057cd78065056cfdaedac43c042a772e7d",
+    "nix_hash": "sha256-OBRrQTRMHYLDzhepKrkXBXzXgGUFbP2u2sQ8BCp3Ln0="
   },
   "aura": {
     "repository": "https://github.com/techmore/aura",
