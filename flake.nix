@@ -38,7 +38,7 @@
           {
             nixpkgs.overlays = overlays;
             aurora.desktop = desktop;
-            boot.kernelPackages = binaryKernelPackages;
+            boot.kernelPackages = nixpkgs.lib.mkForce binaryKernelPackages;
           }
           ./modules/image.nix ];
       };
