@@ -43,6 +43,11 @@ buildPkgs.stdenvNoCC.mkDerivation {
     kernelFile = "Image";
     dtbs = "dtbs";
     buildDTBs = true;
+    isLTS = false;
+    isZen = false;
+    kernelAtLeast = buildPkgs.lib.versionAtLeast version;
+    kernelOlder = buildPkgs.lib.versionOlder version;
+    commonMakeFlags = [ ];
     features = {
       ia32Emulation = false;
       efiBootStub = false;
