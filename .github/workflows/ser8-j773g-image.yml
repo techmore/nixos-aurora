@@ -69,7 +69,7 @@ jobs:
           nice -n 10 ionice -c 2 -n 7 nix build \
             --max-jobs 1 --cores 2 --print-build-logs \
             --out-link binary-kernel .#packages.x86_64-linux.j773g-binary-kernel
-          kernel_store=$(readlink -f binary-kernel)
+          kernel_store=$(readlink binary-kernel)
           kernel_host=/home/sdolbec/.nix-portable/nix${kernel_store#/nix}
           test "$(sha256sum "$kernel_host/Image" | cut -d' ' -f1)" = \
             13d3d96630b2cb68c5d3828819431fe5b4c851a4f40c0b498978ead27fe662e7
@@ -87,7 +87,7 @@ jobs:
 
       - name: Prove the outputs are served by SER8
         run: |
-          for path in "$(readlink -f binary-kernel)" "$(readlink -f system)" "$(readlink -f installer)"; do
+          for path in "$(readlink binary-kernel)" "$(readlink system)" "$(readlink installer)"; do
             hash=${path#/nix/store/}
             hash=${hash%%-*}
             curl --fail --silent --show-error "http://10.20.0.117:5000/$hash.narinfo" \
