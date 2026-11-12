@@ -1,0 +1,93 @@
+name: Run 67 pinned NixOS KDE image
+run-name: Run 67 pinned NixOS KDE image (45c9b545)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  image:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 180
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          repository: techmore/nixos-aurora
+          ref: 45c9b545a577718979ed856a44e0da6c614129dd
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify pinned checkout
+        run: test "$(git rev-parse HEAD)" = 45c9b545a577718979ed856a44e0da6c614129dd
+      - uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b # v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            extra-experimental-features = auto-allocate-uids cgroups
+            auto-allocate-uids = true
+            use-cgroups = true
+            extra-system-features = uid-range
+            connect-timeout = 15
+            stalled-download-timeout = 60
+            download-attempts = 3
+            extra-substituters = https://aurorasilicon.org/nixos-aurora/cache
+            extra-trusted-public-keys = aurora-nixos-1:ZxmPNEWsrzgXai+W+dlTE8cachb1xaatfXKK8X8go14=
+      - name: Import verified hardware builds with bounded signed-cache probe
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp scripts/import-build-cache.py scripts/import-build-cache-run67.py
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("scripts/import-build-cache-run67.py")
+          text = path.read_text()
+          old = "cached = subprocess.run(['nix', 'copy', '--from', 'https://aurorasilicon.org/nixos-aurora/cache',"
+          new = "cached = subprocess.run(['timeout', '300', 'nix', 'copy', '--from', 'https://aurorasilicon.org/nixos-aurora/cache',"
+          if text.count(old) != 1:
+              raise SystemExit("signed-cache probe did not match exactly once")
+          path.write_text(text.replace(old, new))
+          PY
+          test -z "$(git status --short --untracked-files=no)"
+          python3 scripts/import-build-cache-run67.py --output build-import.json \
+            --packages fex-mesa flatpak-gl kernel mesa audio ucm aura avd-fw alsa-utils
+      - name: Fetch pinned sources with verification and rate-limit backoff
+        run: python3 scripts/prefetch-sources.py
+      - name: Build the pinned system and installer closures
+        run: |
+          nix build --cores 4 --max-jobs 2 --print-build-logs --out-link system .#nixosConfigurations.aurora-kde.config.system.build.toplevel
+          nix build --out-link installer .#nixosConfigurations.aurora-kde.config.system.build.nixos-install
+          nix build --out-link aura .#aura
+          nix build --out-link grub .#nixosConfigurations.aurora-kde.pkgs.grub2_efi
+          nix build --print-build-logs --out-link result-stage2 .#checks.aarch64-linux.stage2
+          python3 scripts/verify-image-closure.py --proof build-import.json ./system ./installer ./aura ./grub ./result-stage2
+          python3 scripts/dbus-service-names.py ./system
+          nix flake check --print-build-logs
+      - name: Assemble the installer filesystem bundle
+        env:
+          AURORA_UPDATE_CHANNEL: pinned
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y btrfs-progs e2fsprogs dosfstools fdisk zstd
+          sudo env PATH="$PATH" AURORA_UPDATE_CHANNEL="$AURORA_UPDATE_CHANNEL" bash scripts/build-image kde "$(readlink -f system)" "$(readlink -f installer)" "$(readlink -f aura)" "$(readlink -f grub)" 2>&1 | tee image-build.log
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        if: success()
+        with:
+          subject-path: out/*-filesystems.tar.zst
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: nixos-kde-run67-candidate
+          compression-level: 0
+          path: |
+            image-build.log
+            out/*-filesystems.tar.zst*
+            out/*-installer/image.json
+            out/*-installer/closure.json
+            build-import.json
+          retention-days: 14
