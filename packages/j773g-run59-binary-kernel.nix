@@ -62,6 +62,7 @@ buildPkgs.stdenvNoCC.mkDerivation {
   passthru = {
     modDirVersion = version;
     kernelFile = "Image";
+    target = "Image";
     dtbs = "dtbs";
     buildDTBs = true;
     isLTS = false;
