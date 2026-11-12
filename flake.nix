@@ -20,10 +20,23 @@
         # https://github.com/NixOS/nixpkgs/issues/410814
         config.problems.handlers."gtk+".broken = "warn";
       };
+      # SER8 builds the J773g kernel natively on x86_64 with an AArch64
+      # cross toolchain.  The rest of the image remains the ordinary native
+      # AArch64 closure, so stock and Aurora-specific paths stay substitutable.
+      crossPkgs = import nixpkgs {
+        localSystem = "x86_64-linux";
+        crossSystem = system;
+        inherit overlays;
+        config.problems.handlers."gtk+".broken = "warn";
+      };
       makeSystem = desktop: nixpkgs.lib.nixosSystem {
         inherit system;
         modules = [ apple-silicon.nixosModules.default self.nixosModules.default self.nixosModules.installed
-          { nixpkgs.overlays = overlays; aurora.desktop = desktop; }
+          {
+            nixpkgs.overlays = overlays;
+            aurora.desktop = desktop;
+            boot.kernelPackages = crossPkgs.linux-asahi;
+          }
           ./modules/image.nix ];
       };
     in {
@@ -91,6 +104,7 @@
       };
       # The payload runs in an ARM machine's x86 guest, and is built on x86.
       packages.x86_64-linux.fex-mesa = pkgs.aurora-fex-mesa;
+      packages.x86_64-linux.j773g-cross-kernel = crossPkgs.linux-asahi.kernel;
       checks.${system} = import ./checks {
         inherit self nixpkgs pkgs system overlays makeSystem;
       };

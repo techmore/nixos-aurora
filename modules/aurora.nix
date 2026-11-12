@@ -30,8 +30,16 @@
     # Remove this exception when Steam no longer needs GTK 2.
     # https://github.com/NixOS/nixpkgs/issues/410814
     nixpkgs.config.problems.handlers."gtk+".broken = lib.mkDefault "warn";
-    nix.settings.extra-substituters = [ "https://aurorasilicon.org/nixos-aurora/cache" ];
-    nix.settings.extra-trusted-public-keys = [ (lib.removeSuffix "\n" (builtins.readFile ../keys/cache.pub)) ];
+    # Prefer Sean's LAN cache.  Aurora remains the slow fallback for paths
+    # SER8 has not imported yet.
+    nix.settings.extra-substituters = [
+      "http://10.20.0.117:5000"
+      "https://aurorasilicon.org/nixos-aurora/cache"
+    ];
+    nix.settings.extra-trusted-public-keys = [
+      "ser8-aurora-1:CYaqyjTrDutEdGVEBbqTr2FdwvjWFq+4xW1k2CIo82s="
+      (lib.removeSuffix "\n" (builtins.readFile ../keys/cache.pub))
+    ];
     nix.settings.experimental-features = [ "nix-command" "flakes" ];
     networking.hostName = lib.mkDefault "aurora";
     networking.networkmanager.enable = true;

@@ -1,0 +1,95 @@
+name: SER8 J773g cross-built image
+run-name: SER8 J773g cross-built image (${{ github.sha }})
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: ser8-j773g-image
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  image:
+    if: github.repository == 'techmore/nixos-aurora' && github.event_name == 'workflow_dispatch'
+    runs-on: [self-hosted, ser8, nix]
+    timeout-minutes: 180
+    env:
+      NP_GIT: /usr/bin/git
+      NP_LOCATION: /home/sdolbec
+      NIX_CONFIG: |
+        extra-substituters = http://10.20.0.117:5000 https://aurorasilicon.org/nixos-aurora/cache
+        extra-trusted-public-keys = ser8-aurora-1:CYaqyjTrDutEdGVEBbqTr2FdwvjWFq+4xW1k2CIo82s= aurora-nixos-1:ZxmPNEWsrzgXai+W+dlTE8cachb1xaatfXKK8X8go14=
+        connect-timeout = 30
+        stalled-download-timeout = 300
+        download-attempts = 12
+        max-substitution-jobs = 1
+        http-connections = 1
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify trusted SER8 execution and capacity
+        run: |
+          test "$GITHUB_REPOSITORY" = techmore/nixos-aurora
+          test "$GITHUB_EVENT_NAME" = workflow_dispatch
+          test "$RUNNER_ARCH" = X64
+          used=$(df -P / | awk 'NR == 2 { sub(/%/, "", $5); print $5 }')
+          test "$used" -lt 85
+          nix --version
+          curl --fail --silent --show-error http://10.20.0.117:5000/nix-cache-info
+
+      - name: Import verified Aurora-specific closures once
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          nice -n 10 ionice -c 2 -n 7 python3 scripts/import-build-cache.py \
+            --output build-import.json \
+            --packages fex-mesa flatpak-gl mesa audio ucm aura avd-fw alsa-utils
+
+      - name: Prefetch the pinned kernel source with rate-limit backoff
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: nice -n 10 ionice -c 2 -n 7 python3 scripts/prefetch-sources.py kernel
+
+      - name: Cross-build the J773g kernel on x86_64
+        run: |
+          nice -n 10 ionice -c 2 -n 7 nix build \
+            --max-jobs 1 --cores 14 --print-build-logs \
+            --out-link cross-kernel .#packages.x86_64-linux.j773g-cross-kernel
+
+      - name: Build the KDE system and installer closures
+        run: |
+          nice -n 10 ionice -c 2 -n 7 nix build \
+            --max-jobs 1 --cores 14 --print-build-logs \
+            --out-link system .#nixosConfigurations.aurora-kde.config.system.build.toplevel
+          nice -n 10 ionice -c 2 -n 7 nix build \
+            --max-jobs 1 --cores 14 --print-build-logs \
+            --out-link installer .#nixosConfigurations.aurora-kde.config.system.build.nixos-install
+
+      - name: Prove the outputs are served by SER8
+        run: |
+          for path in "$(readlink -f cross-kernel)" "$(readlink -f system)" "$(readlink -f installer)"; do
+            hash=${path#/nix/store/}
+            hash=${hash%%-*}
+            curl --fail --silent --show-error "http://10.20.0.117:5000/$hash.narinfo" \
+              | grep -q '^Sig: ser8-aurora-1:'
+          done
+          used=$(df -P / | awk 'NR == 2 { sub(/%/, "", $5); print $5 }')
+          test "$used" -lt 85
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: ser8-j773g-build-receipt
+          path: build-import.json
+          retention-days: 14
