@@ -28,7 +28,7 @@
         inherit overlays;
         config.problems.handlers."gtk+".broken = "warn";
       };
-      binaryKernel = import ./packages/j773g-run59-binary-kernel.nix {
+      binaryKernel = crossPkgs.buildPackages.callPackage ./packages/j773g-run59-binary-kernel.nix {
         buildPkgs = crossPkgs.buildPackages;
       };
       binaryKernelPackages = pkgs.linuxPackagesFor binaryKernel;

@@ -1,4 +1,4 @@
-{ buildPkgs }:
+{ buildPkgs, ... }:
 
 let
   version = "7.3.0-m4atlrx+";
