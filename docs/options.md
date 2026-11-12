@@ -546,6 +546,26 @@ Lux below which the backlight turns on; above fullLux and at most offLux. The de
 
 **Declared in:** [kbd-light.nix](https://github.com/aurora-silicon/nixos-aurora/blob/main/modules/kbd-light.nix)
 
+## `aurora.kde.theme`
+
+Plasma's default look. `breeze` keeps Plasma's own defaults.
+`pantheon` is an elementary OS look: a top bar with an applications
+menu, centred clock and status area; a centred dock that fits its
+launchers; elementary icons, cursors and wallpaper; the Inter font;
+close and maximize buttons on opposite sides; rounded window corners.
+Users can still change each setting, and a user who chose another
+global theme keeps it. Existing users keep their panel layout until
+they apply the theme with its desktop layout in System Settings.
+Requires `aurora.desktop = "kde"`.
+
+**Type:** one of "breeze", "pantheon"
+
+**Default:** `"breeze"`
+
+**Example:** `"pantheon"`
+
+**Declared in:** [kde-theme.nix](https://github.com/aurora-silicon/nixos-aurora/blob/main/modules/kde-theme.nix)
+
 ## `aurora.openssh.startAtBoot`
 
 Start the OpenSSH server and generate its host keys at boot. When false,
