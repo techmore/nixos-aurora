@@ -3,15 +3,15 @@
 let
   version = "7.3.0-m4atlrx+";
   sourceNar = buildPkgs.fetchurl {
-    url = "http://10.20.0.117:5000/nar/1ksnwpkgl44sj9r0rmvlcaz4jdd24s83gl19l0k27x5zynqsraja.nar?hash=b21w7n6lnl2civrhxskygfmdpnryj32g";
-    hash = "sha256-SqqssfW/9CMmoCnQN5AmojVJvmJ01wxykpoQ+ublVs8=";
+    url = "http://10.20.0.117:5000/nar/1b4np921zrqb9kw2pp2ymx6d4qnqqniwnj0v702n7rcvz4i3m1s4.nar?hash=p7ap7hx5llhlc1msjs4ailiy52zqyvqg";
+    hash = "sha256-RIc6Ivmb5WMFOBtIy6PF2GLSTK9e3Cv4TAvnH0S6lqw=";
   };
 in
 buildPkgs.stdenvNoCC.mkDerivation {
   pname = "linux-j773g-run59-binary";
   inherit version;
 
-  outputs = [ "out" "modules" "dev" ];
+  outputs = [ "out" "modules" "dev" "config" ];
   nativeBuildInputs = [ buildPkgs.nix ];
   dontUnpack = true;
 
@@ -26,6 +26,7 @@ buildPkgs.stdenvNoCC.mkDerivation {
     install -Dm0444 \
       restored/t8132-j773g-run59.dtb \
       "$out/dtbs/apple/t8132-j773g.dtb"
+    install -m0444 restored/config-7.3.0-m4atlrx+ "$config"
 
     # Run 59 intentionally has no matching loadable-module tree.  Its boot,
     # NVMe, Ethernet, USB, display and GPU drivers are built in.  Do not put
