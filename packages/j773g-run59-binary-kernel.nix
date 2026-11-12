@@ -2,6 +2,26 @@
 
 let
   version = "7.3.0-m4atlrx+";
+  configValues = {
+    CONFIG_BINFMT_ELF = "y";
+    CONFIG_FW_LOADER = "y";
+    CONFIG_MODULES = "y";
+    CONFIG_RUST = "y";
+  };
+  kernelConfig =
+    let
+      attrName = attr: "CONFIG_" + attr;
+    in
+    rec {
+      isSet = attr: builtins.hasAttr (attrName attr) configValues;
+      getValue = attr: if isSet attr then builtins.getAttr (attrName attr) configValues else null;
+      isYes = attr: getValue attr == "y";
+      isNo = attr: getValue attr == "n";
+      isModule = attr: getValue attr == "m";
+      isEnabled = attr: isModule attr || isYes attr;
+      isDisabled = attr: !isSet attr || isNo attr;
+    }
+    // configValues;
   sourceNar = buildPkgs.fetchurl {
     url = "http://10.20.0.117:5000/nar/1b4np921zrqb9kw2pp2ymx6d4qnqqniwnj0v702n7rcvz4i3m1s4.nar?hash=p7ap7hx5llhlc1msjs4ailiy52zqyvqg";
     hash = "sha256-RIc6Ivmb5WMFOBtIy6PF2GLSTK9e3Cv4TAvnH0S6lqw=";
@@ -11,7 +31,7 @@ buildPkgs.stdenvNoCC.mkDerivation {
   pname = "linux-j773g-run59-binary";
   inherit version;
 
-  outputs = [ "out" "modules" "dev" "config" ];
+  outputs = [ "out" "modules" "dev" "configFile" ];
   nativeBuildInputs = [ buildPkgs.nix ];
   dontUnpack = true;
 
@@ -26,7 +46,7 @@ buildPkgs.stdenvNoCC.mkDerivation {
     install -Dm0444 \
       restored/t8132-j773g-run59.dtb \
       "$out/dtbs/apple/t8132-j773g.dtb"
-    install -m0444 restored/config-7.3.0-m4atlrx+ "$config"
+    install -m0444 restored/config-7.3.0-m4atlrx+ "$configFile"
 
     # Run 59 intentionally has no matching loadable-module tree.  Its boot,
     # NVMe, Ethernet, USB, display and GPU drivers are built in.  Do not put
@@ -49,6 +69,7 @@ buildPkgs.stdenvNoCC.mkDerivation {
     kernelAtLeast = buildPkgs.lib.versionAtLeast version;
     kernelOlder = buildPkgs.lib.versionOlder version;
     commonMakeFlags = [ ];
+    config = kernelConfig;
     features = {
       ia32Emulation = false;
       efiBootStub = false;
