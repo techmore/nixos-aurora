@@ -1,4 +1,5 @@
 name: Native Aurora NixOS images
+run-name: Native Aurora NixOS ${{ inputs.desktop }} (${{ github.ref_name }})
 on:
   workflow_dispatch:
     inputs:
