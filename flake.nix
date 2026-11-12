@@ -87,6 +87,8 @@
         fido = pkgs.aurora-fido;
         sep-sk = pkgs.aurora-sep-sk;
         xart = pkgs.aurora-xart;
+        pantheon-plasma = pkgs.aurora-pantheon-plasma;
+        elementary-icons-plasma = pkgs.aurora-elementary-icons-plasma;
         sep-luks = pkgs.aurora-sep-luks;
       };
       # The payload runs in an ARM machine's x86 guest, and is built on x86.

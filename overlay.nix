@@ -130,6 +130,8 @@ in {
   docker = final.docker_29;
   aurora-logos = final.callPackage ./logos/package.nix { };
   plymouth-theme-aurora = final.callPackage ./plymouth-theme-aurora/package.nix { };
+  aurora-pantheon-plasma = final.callPackage ./pantheon-plasma/package.nix { };
+  aurora-elementary-icons-plasma = final.callPackage ./pantheon-plasma/icons.nix { };
   kdePackages = prev.kdePackages.overrideScope (_: kdePrev: {
     # Opt-in ambient white point in Night Light (AmbientWhitePoint in kwinrc,
     # off by default), fed by iio-sensor-proxy's ColorTemperature. The same
