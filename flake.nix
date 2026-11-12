@@ -20,22 +20,25 @@
         # https://github.com/NixOS/nixpkgs/issues/410814
         config.problems.handlers."gtk+".broken = "warn";
       };
-      # SER8 builds the J773g kernel natively on x86_64 with an AArch64
-      # cross toolchain.  The rest of the image remains the ordinary native
-      # AArch64 closure, so stock and Aurora-specific paths stay substitutable.
+      # The run-59 kernel is a data-only package assembled by SER8's native
+      # tools.  No kernel or cross toolchain is compiled during image builds.
       crossPkgs = import nixpkgs {
         localSystem = "x86_64-linux";
         crossSystem = system;
         inherit overlays;
         config.problems.handlers."gtk+".broken = "warn";
       };
+      binaryKernel = import ./packages/j773g-run59-binary-kernel.nix {
+        buildPkgs = crossPkgs.buildPackages;
+      };
+      binaryKernelPackages = pkgs.linuxPackagesFor binaryKernel;
       makeSystem = desktop: nixpkgs.lib.nixosSystem {
         inherit system;
         modules = [ apple-silicon.nixosModules.default self.nixosModules.default self.nixosModules.installed
           {
             nixpkgs.overlays = overlays;
             aurora.desktop = desktop;
-            boot.kernelPackages = crossPkgs.linux-asahi;
+            boot.kernelPackages = binaryKernelPackages;
           }
           ./modules/image.nix ];
       };
@@ -68,7 +71,7 @@
         bindgen = pkgs.aurora-bindgen;
         aura = pkgs.m1n1;
         uboot = pkgs.uboot-asahi;
-        kernel = pkgs.linux-asahi.kernel;
+        kernel = binaryKernel;
         userpages = pkgs.aurora-userpages;
         proton = pkgs.aurora-proton;
         rusticl = pkgs.aurora-rusticl;
@@ -104,7 +107,7 @@
       };
       # The payload runs in an ARM machine's x86 guest, and is built on x86.
       packages.x86_64-linux.fex-mesa = pkgs.aurora-fex-mesa;
-      packages.x86_64-linux.j773g-cross-kernel = crossPkgs.linux-asahi.kernel;
+      packages.x86_64-linux.j773g-binary-kernel = binaryKernel;
       checks.${system} = import ./checks {
         inherit self nixpkgs pkgs system overlays makeSystem;
       };

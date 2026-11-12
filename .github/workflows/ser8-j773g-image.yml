@@ -1,5 +1,5 @@
-name: SER8 J773g cross-built image
-run-name: SER8 J773g cross-built image (${{ github.sha }})
+name: SER8 J773g binary-kernel image
+run-name: SER8 J773g binary-kernel image (${{ github.sha }})
 
 on:
   workflow_dispatch:
@@ -64,16 +64,15 @@ jobs:
             install -m 0644 build-import.json "$receipt"
           fi
 
-      - name: Prefetch the pinned kernel source with rate-limit backoff
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: nice -n 10 ionice -c 2 -n 7 python3 scripts/prefetch-sources.py kernel
-
-      - name: Cross-build the J773g kernel on x86_64
+      - name: Materialize the exact run-59 binary kernel
         run: |
           nice -n 10 ionice -c 2 -n 7 nix build \
-            --max-jobs 1 --cores 14 --print-build-logs \
-            --out-link cross-kernel .#packages.x86_64-linux.j773g-cross-kernel
+            --max-jobs 1 --cores 2 --print-build-logs \
+            --out-link binary-kernel .#packages.x86_64-linux.j773g-binary-kernel
+          test "$(sha256sum binary-kernel/Image | cut -d' ' -f1)" = \
+            13d3d96630b2cb68c5d3828819431fe5b4c851a4f40c0b498978ead27fe662e7
+          test "$(sha256sum binary-kernel/dtbs/apple/t8132-j773g.dtb | cut -d' ' -f1)" = \
+            5a72db650a379a3320d2736be69a152c5836e16a3cb038a50f0d692180620e46
 
       - name: Build the KDE system and installer closures
         run: |
@@ -86,7 +85,7 @@ jobs:
 
       - name: Prove the outputs are served by SER8
         run: |
-          for path in "$(readlink -f cross-kernel)" "$(readlink -f system)" "$(readlink -f installer)"; do
+          for path in "$(readlink -f binary-kernel)" "$(readlink -f system)" "$(readlink -f installer)"; do
             hash=${path#/nix/store/}
             hash=${hash%%-*}
             curl --fail --silent --show-error "http://10.20.0.117:5000/$hash.narinfo" \
