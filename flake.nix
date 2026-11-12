@@ -31,12 +31,21 @@
       binaryKernel = crossPkgs.buildPackages.callPackage ./packages/j773g-run59-binary-kernel.nix {
         buildPkgs = crossPkgs.buildPackages;
       };
+      # This 4 KiB page launcher is the only target executable absent from
+      # the upstream and Aurora caches.  Cross-build its single C source on
+      # SER8; never try to execute the aarch64 install check on x86_64.
+      crossUserpages = crossPkgs.aurora-userpages.overrideAttrs (_: {
+        doInstallCheck = false;
+      });
+      binaryPackagesOverlay = _: _: {
+        aurora-userpages = crossUserpages;
+      };
       binaryKernelPackages = pkgs.linuxPackagesFor binaryKernel;
       makeSystem = desktop: nixpkgs.lib.nixosSystem {
         inherit system;
         modules = [ apple-silicon.nixosModules.default self.nixosModules.default self.nixosModules.installed
           {
-            nixpkgs.overlays = overlays;
+            nixpkgs.overlays = overlays ++ [ binaryPackagesOverlay ];
             aurora.desktop = desktop;
             boot.kernelPackages = nixpkgs.lib.mkForce binaryKernelPackages;
             # The proven kernel already carries the Apple cpufreq support.

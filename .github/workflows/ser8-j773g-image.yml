@@ -32,8 +32,8 @@ jobs:
         connect-timeout = 30
         stalled-download-timeout = 300
         download-attempts = 12
-        max-substitution-jobs = 1
-        http-connections = 1
+        max-substitution-jobs = 4
+        http-connections = 4
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
