@@ -25,6 +25,7 @@ jobs:
     env:
       NP_GIT: /usr/bin/git
       NP_LOCATION: /home/sdolbec
+      TMPDIR: ${{ runner.temp }}
       NIX_CONFIG: |
         extra-substituters = http://10.20.0.117:5000 https://aurorasilicon.org/nixos-aurora/cache
         extra-trusted-public-keys = ser8-aurora-1:CYaqyjTrDutEdGVEBbqTr2FdwvjWFq+4xW1k2CIo82s= aurora-nixos-1:ZxmPNEWsrzgXai+W+dlTE8cachb1xaatfXKK8X8go14=
