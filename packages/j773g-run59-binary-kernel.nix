@@ -42,6 +42,7 @@ buildPkgs.stdenvNoCC.mkDerivation {
     modDirVersion = version;
     kernelFile = "Image";
     dtbs = "dtbs";
+    buildDTBs = true;
     features = {
       ia32Emulation = false;
       efiBootStub = false;
