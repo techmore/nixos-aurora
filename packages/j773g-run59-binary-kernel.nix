@@ -46,6 +46,8 @@ buildPkgs.stdenvNoCC.mkDerivation {
     install -Dm0444 \
       restored/t8132-j773g-run59.dtb \
       "$out/dtbs/apple/t8132-j773g.dtb"
+    printf '%s\n' b3218010d34be05fa0d6ebfb6fd08638ecdb7451 \
+      > "$out/aurora-source-commit"
     install -m0444 restored/config-7.3.0-m4atlrx+ "$configfile"
 
     # Run 59 intentionally has no matching loadable-module tree.  Its boot,
