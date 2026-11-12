@@ -48,6 +48,10 @@
             nixpkgs.overlays = overlays ++ [ binaryPackagesOverlay ];
             aurora.desktop = desktop;
             boot.kernelPackages = nixpkgs.lib.mkForce binaryKernelPackages;
+            # Every driver needed by run 59 is built into the copied Image.
+            # Its deliberately empty modules output must not make the initrd
+            # closure fail while resolving the profile's module hints.
+            boot.initrd.allowMissingModules = true;
             # The proven kernel already carries the Apple cpufreq support.
             # Avoid evaluating the kernel-source-bound cpupower package: this
             # binary package intentionally has no source tree to compile.
