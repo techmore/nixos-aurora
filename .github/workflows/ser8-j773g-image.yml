@@ -27,8 +27,8 @@ jobs:
       NP_LOCATION: /home/sdolbec
       TMPDIR: /home/sdolbec/.local/share/actions-runner-nixos-aurora/_work/_temp
       NIX_CONFIG: |
-        extra-substituters = http://10.20.0.117:5000 https://aurorasilicon.org/nixos-aurora/cache
-        extra-trusted-public-keys = ser8-aurora-1:CYaqyjTrDutEdGVEBbqTr2FdwvjWFq+4xW1k2CIo82s= aurora-nixos-1:ZxmPNEWsrzgXai+W+dlTE8cachb1xaatfXKK8X8go14=
+        extra-substituters = http://10.20.0.117:5000
+        extra-trusted-public-keys = ser8-aurora-1:CYaqyjTrDutEdGVEBbqTr2FdwvjWFq+4xW1k2CIo82s=
         connect-timeout = 30
         stalled-download-timeout = 300
         download-attempts = 12
@@ -54,9 +54,15 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          nice -n 10 ionice -c 2 -n 7 python3 scripts/import-build-cache.py \
-            --output build-import.json \
-            --packages fex-mesa flatpak-gl mesa audio ucm aura avd-fw alsa-utils
+          receipt=/home/sdolbec/.local/state/ser8-nix-cache/aurora-import-b3218010.json
+          if test -s "$receipt"; then
+            cp "$receipt" build-import.json
+          else
+            nice -n 10 ionice -c 2 -n 7 python3 scripts/import-build-cache.py \
+              --output build-import.json \
+              --packages fex-mesa flatpak-gl mesa audio ucm aura avd-fw alsa-utils
+            install -m 0644 build-import.json "$receipt"
+          fi
 
       - name: Prefetch the pinned kernel source with rate-limit backoff
         env:
