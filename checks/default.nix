@@ -32,6 +32,7 @@ in (import ./nix-lint.nix { inherit pkgs; }) // {
   peripheral-firmware = import ./peripheral-firmware.nix { inherit pkgs nixpkgs self; };
   profiles = import ./profiles.nix { inherit pkgs nixpkgs self; };
   module-composition = import ./module-composition.nix { inherit pkgs nixpkgs makeSystem; };
+  kde-theme = import ./kde-theme.nix { inherit pkgs nixpkgs makeSystem; };
   package-overrides = import ./package-overrides.nix { inherit pkgs; };
   kernel-overrides = import ./kernel-overrides.nix { inherit pkgs; };
   bootloader-overrides = import ./bootloader-overrides.nix { inherit pkgs; };
