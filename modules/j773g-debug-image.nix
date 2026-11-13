@@ -61,6 +61,14 @@ in
     linkConfig.RequiredForOnline = "routable";
   };
 
+  # The debug image intentionally bypasses aurora-initrd-root because this
+  # target is already a prepared plaintext filesystem. Remove the matching
+  # firstboot disk-preparation sentinel before units are evaluated so Plasma
+  # Setup and Plasma Login can start, exactly as in the hardware receipt.
+  systemd.tmpfiles.rules = [
+    "r! /var/lib/aurora/firstboot/pending - - - -"
+  ];
+
   # Validation SSH was injected only into the installed test root and removed
   # after the hardware receipt. No operator key or unlocked root account is
   # part of the reproducible image configuration.
