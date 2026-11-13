@@ -20,16 +20,18 @@
         # https://github.com/NixOS/nixpkgs/issues/410814
         config.problems.handlers."gtk+".broken = "warn";
       };
-      # The run-59 kernel is a data-only package assembled by SER8's native
-      # tools.  No kernel or cross toolchain is compiled during image builds.
+      # The run-59 kernel is a data-only package assembled by native tools.
+      # No kernel or cross toolchain is compiled during image builds.  Keep
+      # this native to the image builder so metadata-only rebuilds do not
+      # depend on an x86_64 binary cache.
       crossPkgs = import nixpkgs {
         localSystem = "x86_64-linux";
         crossSystem = system;
         inherit overlays;
         config.problems.handlers."gtk+".broken = "warn";
       };
-      binaryKernel = crossPkgs.buildPackages.callPackage ./packages/j773g-run59-binary-kernel.nix {
-        buildPkgs = crossPkgs.buildPackages;
+      binaryKernel = pkgs.callPackage ./packages/j773g-run59-binary-kernel.nix {
+        buildPkgs = pkgs;
       };
       # This 4 KiB page launcher is the only target executable absent from
       # the upstream and Aurora caches.  Cross-build its single C source on
