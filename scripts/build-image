@@ -78,8 +78,8 @@ if ! basics_output=$(python3 "$root/scripts/check-basics.py" --profile "$desktop
   # systemd-networkd so wired DHCP is available before desktop services.
   [[ $(printf '%s\n' "$basics_output" | grep -c 'FAIL:') == 1 ]]
   grep -qx 'aurora basics: network: FAIL: NetworkManager.service is not enabled' <<<"$basics_output"
-  [[ -L $target/etc/systemd/system/multi-user.target.wants/systemd-networkd.service ]]
-  grep -qF 'm4run=j773g-nixos-debug-20261112' "$target/boot/grub/grub.cfg"
+  [[ -L $system/etc/systemd/system/multi-user.target.wants/systemd-networkd.service ]]
+  grep -qF 'm4run=j773g-nixos-debug-20261112' "$system/kernel-params"
   echo 'aurora basics: accepting systemd-networkd for the J773g debug image' >&2
 else
   printf '%s\n' "$basics_output"
