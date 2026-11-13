@@ -158,7 +158,14 @@ python3 "$root/scripts/prepare-stage2.py" \
 # A Stage 1 with the CTXR window chainloads these, on Mach-O Macs. The image
 # gets them only with an aura that has no monitor, as a rebuild does.
 if [[ -e $aura/share/aura/monitor-free ]]; then
-  python3 "$root/scripts/prepare-ctxr-stage2.py" "$out/esp/m1n1"
+  ctxr_args=()
+  # The J773g debug image deliberately carries only its exact run-59 DTB.
+  # Preserve the universal-image requirement everywhere else, while allowing
+  # this diagnostic profile to emit its verified J773g CTXR payload.
+  if grep -qF 'm4run=j773g-nixos-debug-20261112' "$system/kernel-params"; then
+    ctxr_args+=(--keep-going)
+  fi
+  python3 "$root/scripts/prepare-ctxr-stage2.py" "${ctxr_args[@]}" "$out/esp/m1n1"
 fi
 nix path-info --recursive --json "$system" > "$out/closure.json"
 cp "$target/etc/nixos/machine.nix" "$out/machine.nix"
