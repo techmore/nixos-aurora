@@ -61,18 +61,7 @@ in
     linkConfig.RequiredForOnline = "routable";
   };
 
-  aurora.openssh.startAtBoot = true;
-  services.openssh.openFirewall = true;
-  services.openssh.settings = {
-    PermitRootLogin = "prohibit-password";
-    PasswordAuthentication = false;
-    KbdInteractiveAuthentication = false;
-  };
-  users.users.root = {
-    # A valid hash of a discarded random value keeps key-only root SSH usable.
-    hashedPassword = "$6$VIS9r/qc44mrsCUU$yAkvquSwh5.9gXZQHi3MAVLQzYqnHWFJ9ht00jSTKv.vJkW.VLuQGUzsgJkn69zqq/cIxdNhZ/Zr8rqICuBEK1";
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOFmj3bexg2JyznrZGGKGrBDNm1OblwAZciPez1Zhmb2"
-    ];
-  };
+  # Validation SSH was injected only into the installed test root and removed
+  # after the hardware receipt. No operator key or unlocked root account is
+  # part of the reproducible image configuration.
 }
