@@ -106,7 +106,10 @@ in {
         Type = "oneshot";
         RemainAfterExit = true;
         TimeoutStartSec = "infinity";
-        ExecStartPre = "${pkgs.kmod}/bin/modprobe apple_wdt";
+        # Some binary-kernel profiles build the watchdog in.  A watchdog
+        # handoff is useful when it is loadable, but must never make stage 1
+        # fatal when modprobe has no matching loadable object.
+        ExecStartPre = "-${pkgs.kmod}/bin/modprobe apple_wdt";
         ExecStart = "${pkgs.aurora-firstboot}/lib/aurora/aurora-initrd-root";
         Environment = "AURORA_IMAGE_LAYOUT=${layoutFile}";
       };

@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 let
   rootUUID = config.aurora.imageLayout.rootUUID;
 in
@@ -7,6 +7,17 @@ in
   # visible and reboot after a stage-1 failure instead of waiting forever.
   boot.consoleLogLevel = lib.mkForce 7;
   boot.plymouth.enable = lib.mkForce false;
+  # The archived run-59 config builds the boot-critical storage/filesystem
+  # drivers and apple_wdt into the kernel.  Its payload contains no matching
+  # loadable .ko files, so stage 1 must not request any modules.
+  boot.initrd.availableKernelModules = lib.mkForce [ ];
+  boot.initrd.kernelModules = lib.mkForce [ ];
+  boot.initrd.systemd.services.aurora-initrd-root.serviceConfig = {
+    ExecStartPre = lib.mkForce [ ];
+    # This trial root is already plaintext.  The run-59 kernel also has
+    # CONFIG_DM_CRYPT unset, so skip the first-boot encryption converter.
+    ExecStart = lib.mkForce "${pkgs.coreutils}/bin/true";
+  };
   boot.kernelParams = lib.mkForce [
     "user4k=on"
     "console=tty0"
