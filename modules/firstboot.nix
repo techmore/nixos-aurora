@@ -5,7 +5,7 @@ let
   # --root-device-units prints them for dracut and mkinitcpio.
   rootDeviceUnits = [
     "${utils.escapeSystemdPath "/dev/disk/by-uuid/${layout.rootUUID}"}.device"
-    "${utils.escapeSystemdPath "/dev/disk/by-label/AURORA_ROOT"}.device"
+    "${utils.escapeSystemdPath "/dev/disk/by-label/nixos-j773g"}.device"
   ];
   layoutFile = pkgs.writeText "aurora-image-layout" ''
     format=1

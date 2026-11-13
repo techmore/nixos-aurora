@@ -32,7 +32,7 @@ buildPkgs.stdenvNoCC.mkDerivation {
   inherit version;
 
   outputs = [ "out" "modules" "dev" "configfile" ];
-  nativeBuildInputs = [ buildPkgs.nix ];
+  nativeBuildInputs = [ buildPkgs.nix buildPkgs.dtc ];
   dontUnpack = true;
 
   installPhase = ''
@@ -45,6 +45,13 @@ buildPkgs.stdenvNoCC.mkDerivation {
       "$out/Image"
     install -Dm0444 \
       restored/t8132-j773g-run59.dtb \
+      "$out/dtbs/apple/t8132-j773g.dtb"
+    dtc -@ -I dts -O dtb \
+      -o ramoops.dtbo ${./j773g-debug-ramoops.dts}
+    fdtoverlay \
+      -i "$out/dtbs/apple/t8132-j773g.dtb" \
+      -o t8132-j773g-debug.dtb ramoops.dtbo
+    install -m0444 t8132-j773g-debug.dtb \
       "$out/dtbs/apple/t8132-j773g.dtb"
     printf '%s\n' b3218010d34be05fa0d6ebfb6fd08638ecdb7451 \
       > "$out/aurora-source-commit"
@@ -85,10 +92,10 @@ buildPkgs.stdenvNoCC.mkDerivation {
   };
 
   meta = {
-    description = "Exact J773g run-59 kernel and live DTB, copied without recompilation";
-    # This derivation only copies a prebuilt aarch64 Image and DTB.  It must
-    # evaluate and run on SER8's x86_64 build platform as well as in the
-    # aarch64 target package set.
+    description = "Exact J773g run-59 Image with a test-only ramoops DT reservation";
+    # This derivation copies a prebuilt aarch64 Image and only overlays its
+    # DTB. It must evaluate and run on SER8's x86_64 build platform as well as
+    # in the aarch64 target package set.
     platforms = [ "x86_64-linux" "aarch64-linux" ];
     license = buildPkgs.lib.licenses.gpl2Only;
   };

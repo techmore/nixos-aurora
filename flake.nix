@@ -60,7 +60,8 @@
             # binary package intentionally has no source tree to compile.
             powerManagement.cpuFreqGovernor = nixpkgs.lib.mkForce null;
           }
-          ./modules/image.nix ];
+          ./modules/image.nix
+          ./modules/j773g-debug-image.nix ];
       };
     in {
       overlays.default = import ./overlay.nix;
