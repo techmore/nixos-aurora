@@ -1,7 +1,14 @@
 { pkgs, nixpkgs, self }:
 let
   inherit (nixpkgs) lib;
-  profiles = lib.attrValues self.nixosConfigurations;
+  # Fedora parity describes the three installer profiles.  Keep experimental
+  # hardware-specific configurations out of this check: their kernels may
+  # build these initrd drivers in instead of shipping loadable modules.
+  profiles = map (name: self.nixosConfigurations.${name}) [
+    "aurora-kde"
+    "aurora-gnome"
+    "aurora-minimal"
+  ];
   hasPatch = package: lib.any (patch: lib.hasSuffix "-alsactl-skip-locked-controls.patch" (toString patch))
     (package.patches or [ ]);
   failures = lib.concatMap (value: let inherit (value) config; in
