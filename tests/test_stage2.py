@@ -562,8 +562,12 @@ class PrepareCtxrStage2Tests(unittest.TestCase):
 
     def test_image_build_adds_the_ctxr_files_only_with_the_marker(self):
         text = (ROOT / 'scripts/build-image').read_text()
-        self.assertIn('if [[ -e $aura/share/aura/monitor-free ]]; then\n'
-                      '  python3 "$root/scripts/prepare-ctxr-stage2.py"', text)
+        marker = text.index('if [[ -e $aura/share/aura/monitor-free ]]; then')
+        call = text.index('python3 "$root/scripts/prepare-ctxr-stage2.py"')
+        self.assertLess(marker, call)
+        self.assertLess(call, text.index('\nfi', call))
+        self.assertIn("if grep -qF 'm4run=j773g-nixos-debug-20261112'",
+                      text[marker:call])
         self.assertEqual(text.count('prepare-ctxr-stage2.py'), 1)
 
     def test_the_installed_build_splits_boards_only_with_the_marker(self):
