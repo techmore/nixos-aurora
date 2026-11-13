@@ -6,6 +6,11 @@ let
     CONFIG_BINFMT_ELF = "y";
     CONFIG_FW_LOADER = "y";
     CONFIG_MODULES = "y";
+    CONFIG_APPLE_WATCHDOG = "y";
+    CONFIG_NVME_APPLE = "y";
+    CONFIG_BTRFS_FS = "y";
+    CONFIG_EXT4_FS = "y";
+    CONFIG_VFAT_FS = "y";
     CONFIG_RUST = "y";
   };
   kernelConfig =
@@ -32,13 +37,13 @@ buildPkgs.stdenvNoCC.mkDerivation {
   inherit version;
 
   outputs = [ "out" "modules" "dev" "configfile" ];
-  nativeBuildInputs = [ buildPkgs.nix buildPkgs.dtc ];
+  nativeBuildInputs = [ buildPkgs.python3Minimal buildPkgs.dtc buildPkgs.kmod ];
   dontUnpack = true;
 
   installPhase = ''
     runHook preInstall
 
-    nix-store --restore restored < ${sourceNar}
+    python ${./restore-nar.py} ${sourceNar} restored
 
     install -Dm0444 \
       restored/boot/vmlinuz-7.3.0-m4-ctxr-13d3d966 \
@@ -57,13 +62,15 @@ buildPkgs.stdenvNoCC.mkDerivation {
       > "$out/aurora-source-commit"
     install -m0444 restored/config-7.3.0-m4atlrx+ "$configfile"
 
-    # Run 59 intentionally has no matching loadable-module tree.  Its boot,
-    # NVMe, Ethernet, USB, display and GPU drivers are built in.  Do not put
-    # Fedora's incompatible 7.3.0-26 modules under this release name.
+    # The archive contains no matching loadable .ko files.  Record the
+    # watchdog built into this exact Image and generate kmod's indexes for its
+    # real release.  Never relabel Fedora's incompatible 7.3.0-26 modules.
     mkdir -p "$modules/lib/modules/${version}" "$dev"
     touch "$modules/lib/modules/${version}/modules.order"
-    touch "$modules/lib/modules/${version}/modules.builtin"
+    printf '%s\n' kernel/drivers/watchdog/apple_wdt.ko \
+      > "$modules/lib/modules/${version}/modules.builtin"
     touch "$modules/lib/modules/${version}/modules.builtin.modinfo"
+    depmod -b "$modules" ${version}
 
     runHook postInstall
   '';
