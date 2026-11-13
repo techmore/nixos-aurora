@@ -6,11 +6,6 @@ let
     CONFIG_BINFMT_ELF = "y";
     CONFIG_FW_LOADER = "y";
     CONFIG_MODULES = "y";
-    CONFIG_APPLE_WATCHDOG = "y";
-    CONFIG_NVME_APPLE = "y";
-    CONFIG_BTRFS_FS = "y";
-    CONFIG_EXT4_FS = "y";
-    CONFIG_VFAT_FS = "y";
     CONFIG_RUST = "y";
   };
   kernelConfig =
@@ -37,7 +32,7 @@ buildPkgs.stdenvNoCC.mkDerivation {
   inherit version;
 
   outputs = [ "out" "modules" "dev" "configfile" ];
-  nativeBuildInputs = [ buildPkgs.nix buildPkgs.dtc buildPkgs.kmod ];
+  nativeBuildInputs = [ buildPkgs.nix buildPkgs.dtc ];
   dontUnpack = true;
 
   installPhase = ''
@@ -62,16 +57,13 @@ buildPkgs.stdenvNoCC.mkDerivation {
       > "$out/aurora-source-commit"
     install -m0444 restored/config-7.3.0-m4atlrx+ "$configfile"
 
-    # The archived run-59 payload has no matching loadable .ko archive.  Keep
-    # its real release name and record the built-in watchdog so kmod knows it
-    # is satisfied by the Image.  Never relabel Fedora's incompatible 7.3.0-26
-    # modules as this kernel.
+    # Run 59 intentionally has no matching loadable-module tree.  Its boot,
+    # NVMe, Ethernet, USB, display and GPU drivers are built in.  Do not put
+    # Fedora's incompatible 7.3.0-26 modules under this release name.
     mkdir -p "$modules/lib/modules/${version}" "$dev"
     touch "$modules/lib/modules/${version}/modules.order"
-    printf '%s\n' kernel/drivers/watchdog/apple_wdt.ko \
-      > "$modules/lib/modules/${version}/modules.builtin"
+    touch "$modules/lib/modules/${version}/modules.builtin"
     touch "$modules/lib/modules/${version}/modules.builtin.modinfo"
-    depmod -b "$modules" ${version}
 
     runHook postInstall
   '';
