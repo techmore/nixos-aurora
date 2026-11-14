@@ -26,6 +26,7 @@
           { nixpkgs.overlays = overlays; aurora.desktop = desktop; }
           ./modules/image.nix ];
       };
+      j773gKernel = pkgs.callPackage ./packages/j773g-binary-kernel.nix { };
     in {
       overlays.default = import ./overlay.nix;
       nixosModules.image = ./modules/image.nix;
@@ -58,6 +59,7 @@
         aura = pkgs.m1n1;
         uboot = pkgs.uboot-asahi;
         kernel = pkgs.linux-asahi.kernel;
+        j773g-binary-kernel = j773gKernel;
         userpages = pkgs.aurora-userpages;
         proton = pkgs.aurora-proton;
         rusticl = pkgs.aurora-rusticl;
