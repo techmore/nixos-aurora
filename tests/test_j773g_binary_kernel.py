@@ -51,6 +51,25 @@ class J773gBinaryKernelTests(unittest.TestCase):
                 expected = f"# CONFIG_{name} is not set" if value == "n" else f"CONFIG_{name}={value}"
                 self.assertIn(expected, lines)
 
+    def test_profile_is_opt_in(self):
+        flake = (ROOT / "flake.nix").read_text()
+        generic = flake.split("j773gKernel =", 1)[0]
+        self.assertNotIn("j773g", generic)
+        self.assertIn('aurora-j773g-kde = makeJ773gSystem "kde";', flake)
+
+    def test_esp_is_label_mounted_and_nonfatal(self):
+        module = (ROOT / "modules" / "j773g.nix").read_text()
+        self.assertIn('/dev/disk/by-label/AURORA_EFI', module)
+        self.assertIn('"nofail"', module)
+
+    def test_nonfatal_boot_steps_are_scoped_to_j773g(self):
+        module = (ROOT / "modules" / "j773g.nix").read_text()
+        self.assertIn('"-${pkgs.kmod}/bin/modprobe apple_wdt"', module)
+        generic = (ROOT / "modules" / "firstboot.nix").read_text()
+        self.assertIn('ExecStartPre = "${pkgs.kmod}/bin/modprobe apple_wdt";', generic)
+        image = (ROOT / "modules" / "image.nix").read_text()
+        self.assertNotIn("nofail", image)
+
 
 if __name__ == "__main__":
     unittest.main()
